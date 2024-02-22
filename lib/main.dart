@@ -50,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
     dio.options.headers = {
       'Content-Type': 'application/json;charset=UTF-8'
     };
+
     final response = await dio.post("https://localhost:7111/api/Auth/Login", 
       data: {'email': _emailController.text, 'password': _passwordController.text});
 

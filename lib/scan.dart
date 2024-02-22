@@ -6,26 +6,30 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'custom_scaffold.dart';
+import 'cart.dart';
 
 class Scan extends StatelessWidget {
-  const Scan({super.key});
+  const Scan({super.key}); 
 
-  Future<void> GetStore(String? QRcodeValue) async {
+  Future<Map<String, dynamic>> GetStore(String? QRcodeValue) async {
     final dio = Dio();
     var pref = await SharedPreferences.getInstance();
     var token = pref.getString('Token')!;
     dio.options.headers['Authorization'] = 'Bearer $token';
     final response = await dio.get("https://localhost:7111/api/Store/Get?id=$QRcodeValue");
-    debugPrint('${response}');
+    debugPrint('$response');
     if(response.statusCode == 200){
-      
+      Map<String, dynamic> responseData = response.data;
+      return responseData;
     } else {
-      debugPrint('Something is not quite right');
+      Map<String, dynamic> responseData = response.data;
+      return responseData;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    String? oldValue = "";
     return CustomScaffold(
       appBarTitle: "",
       body: Center(
@@ -38,8 +42,17 @@ class Scan extends StatelessWidget {
                 final List<Barcode> barcodes = capture.barcodes;
                 final Uint8List? image = capture.image;
                 for (final barcode in barcodes) {
-                  debugPrint('${barcode.rawValue}');
-                  GetStore(barcode.rawValue);
+                  if(oldValue != barcode.rawValue){
+                    var response = await GetStore(barcode.rawValue);
+                    oldValue = barcode.rawValue;
+                    Store store = Store(response["id"], response["name"]);
+                    
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Cart(store: store)),
+                    );
+                  }
                 }
               },
             ),
