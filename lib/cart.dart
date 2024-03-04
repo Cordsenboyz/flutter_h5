@@ -44,6 +44,7 @@ class _CartState extends State<Cart> {
   }
 
   _showSimpleModalDialog(context){
+    String? oldValue = "";
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -58,14 +59,17 @@ class _CartState extends State<Cart> {
                   final List<Barcode> barcodes = capture.barcodes;
                   final Uint8List? image = capture.image;
                   for (final barcode in barcodes) {
-                    debugPrint('${barcode.rawValue}');
-                    var response = await GetStore(barcode.rawValue);
+                    if(oldValue != barcode.rawValue){
+                      var response = await GetStore(barcode.rawValue);
 
-                    Item item = Item(response["id"], response["name"]);
+                      Item item = Item(response["id"], response["name"]);
 
-                    setState(() {
-                      items.add(item);
-                    });
+                      setState(() {
+                        items.add(item);
+                      });
+
+                      Navigator.of(context).pop();
+                    }
                   }
                 },
               ),
@@ -79,19 +83,23 @@ class _CartState extends State<Cart> {
     return CustomScaffold(
       appBarTitle: widget.store.name,
       body: Padding(
-        padding: EdgeInsets.all(40.0),
+        padding: EdgeInsets.only(left: 40.0, right: 40.0, top: 40.0, bottom: 80.0),
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: <Widget>[
             CustomScrollView(
-              slivers: [ListView.builder(
+              slivers: [SliverList.builder(
                 itemCount: items.length,
                 itemBuilder: (BuildContext context, int index)
                 {
                   final item = items[index];
               
-                  return ListTile(
-                    title: Text(item.name),
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      image: DecorationImage(image: AssetImage('assets/h5appLogo.jpg'),fit: BoxFit.fill)
+                    ),
+                    child: Text(item.name),
                   );
                 }
               ),]
@@ -99,6 +107,10 @@ class _CartState extends State<Cart> {
             ElevatedButton(
               onPressed: () => _showSimpleModalDialog(context), 
               child: const Text("Scan Vare")
+            ),
+            ElevatedButton(
+              onPressed: () => (), 
+              child: const Text("Betal")
             )
           ],
         )
